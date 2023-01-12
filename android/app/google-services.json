@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "104",
+    "project_id": "euda-bc9a3",
+    "storage_bucket": "euda-bc9a3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:104:android:885c04eaa6d2691f12dd90",
+        "android_client_info": {
+          "package_name": "com.euda.euda_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "104-b9pn5uqm2noj6vguuioru6o3n5g5sjiv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "asdasdddsasadadaddadds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "104-b9pn5uqm2noj6vguuioru6o3n5g5sjiv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "104-5gh2guovk9d0m65ge4k7o7snuql7d3n2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.euda.eudaMobile"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

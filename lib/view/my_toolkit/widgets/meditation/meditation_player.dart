@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:audioplayers/audioplayers.dart';
+import 'package:euda_app/controllers/audio_state_controller.dart';
 import 'package:euda_app/provider/meditation_provider.dart';
 import 'package:euda_app/view/my_toolkit/widgets/meditation/meditation_player_audio_button.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +13,6 @@ class MyToolKitPlayer extends StatefulWidget {
 }
 
 class _MyToolKitPlayerState extends State<MyToolKitPlayer> {
-  late AudioPlayer advancedAudioPlayer;
-  late AudioCache audioCache = AudioCache();
   late String title;
   late String imgLink;
   late String videoLink;
@@ -24,16 +20,9 @@ class _MyToolKitPlayerState extends State<MyToolKitPlayer> {
   @override
   void initState() {
     super.initState();
-    advancedAudioPlayer = AudioPlayer();
     title = Get.arguments['title'];
     imgLink = Get.arguments['imgLink'];
     videoLink = Get.arguments['videoLink'];
-  }
-
-  @override
-  void dispose() {
-    advancedAudioPlayer.stop();
-    super.dispose();
   }
 
   @override
@@ -66,7 +55,7 @@ class _MyToolKitPlayerState extends State<MyToolKitPlayer> {
                   color: Color.fromRGBO(255, 255, 255, 0.5),
                 ),
                 onPressed: () {
-                  advancedAudioPlayer.stop();
+                  Get.find<AudioManager>().stop();
                   Get.back();
                 },
               ),
@@ -147,7 +136,6 @@ class _MyToolKitPlayerState extends State<MyToolKitPlayer> {
                             child: Container(
                                 color: Colors.transparent,
                                 child: MyToolKitAudioPlayer(
-                                    advancedPlayer: advancedAudioPlayer,
                                     path: videoLink,
                                     title: title,
                                     img: imgLink)),

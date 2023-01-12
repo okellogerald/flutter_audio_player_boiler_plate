@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
+import 'package:euda_app/controllers/audio_state_controller.dart';
 import 'package:euda_app/provider/meditation_provider.dart';
 
 import 'package:euda_app/router/app_pages.dart';
@@ -12,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+
+import 'view/my_toolkit/widgets/meditation/audio_foreground_player.dart';
 
 // import 'package:package_info_plus/package_info_plus.dart';
 //Receive message when app is in background solution for on message
@@ -44,6 +49,8 @@ Future<void> main() async {
   // String value = await VersionService().checkVersion();
   // print(buildNumber);
 
+  Get.lazyPut(() => AudioManager());
+
   runApp(
     MultiProvider(providers: [
       ChangeNotifierProvider(
@@ -65,7 +72,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    //
+    _initForegroundPlayer();
   }
 
   @override
@@ -76,6 +83,26 @@ class _MyAppState extends State<MyApp> {
       // unknownRoute: path == 'home' ? AppPages.routes[4] : AppPages.routes[5],
       theme: ThemeData(fontFamily: 'Manrope'),
       debugShowCheckedModeBanner: false,
+    );
+  }
+
+  _initForegroundPlayer() async {
+    final session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration.music());
+    final audioManager = Get.find<AudioManager>();
+
+    await AudioService.init(
+      builder: () => ForegroundPlayer(
+        audioSession: session,
+        audioManager: audioManager,
+        /*     audioContentStream: ref.read(audioContentStreamProvider.stream),
+        audioPositionStream: ref.read(audioPositionStreamProvider.stream),
+        audioStateStream: ref.read(audioStateStreamProvider.stream),*/
+      ),
+      config: const AudioServiceConfig(
+          androidNotificationChannelId: 'com.euda.euda_app',
+          androidNotificationChannelName: 'Euda',
+          androidNotificationIcon: 'mipmap/launcher_icon'),
     );
   }
 }

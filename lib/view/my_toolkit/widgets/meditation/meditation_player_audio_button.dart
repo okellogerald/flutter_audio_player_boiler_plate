@@ -1,19 +1,16 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:euda_app/const/const.dart';
+import 'package:euda_app/controllers/audio_content.dart';
+import 'package:euda_app/controllers/audio_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 
 class MyToolKitAudioPlayer extends StatefulWidget {
-  AudioPlayer advancedPlayer;
   String path;
   String title;
   String img;
   MyToolKitAudioPlayer(
-      {Key? key,
-      required this.advancedPlayer,
-      required this.path,
-      required this.title,
-      required this.img})
+      {Key? key, required this.path, required this.title, required this.img})
       : super(key: key);
 
   @override
@@ -22,14 +19,6 @@ class MyToolKitAudioPlayer extends StatefulWidget {
 
 class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
   late String videoPath;
-  Duration _duration = new Duration();
-  Duration _position = new Duration();
-
-  bool isPlaying = false;
-  bool isPaused = false;
-  bool isStopped = false;
-  bool isRepeat = false;
-  bool _isLoadedd = false;
 
   Color color = Colors.black;
   Color repeatBtn = Colors.black;
@@ -40,85 +29,50 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
     Icons.stop,
   ];
 
+  AudioManager get controller => Get.find<AudioManager>();
+
+  void play() {
+    final content = AudioContent(
+      title: widget.title,
+      imageURL: widget.img,
+      audioUrl: widget.path,
+    );
+    controller.play(content);
+  }
+
   @override
   void initState() {
-    videoPath = widget.path;
     super.initState();
-
-    this.widget.advancedPlayer.onDurationChanged.listen((d) {
-      setState(() {
-        _duration = d;
-        _isLoadedd = true;
-      });
-    });
-    this.widget.advancedPlayer.onAudioPositionChanged.listen((p) {
-      setState(() {
-        _position = p;
-      });
-    });
-
-    this.widget.advancedPlayer.onPlayerCompletion.listen((event) {
-      setState(() {
-        _position = Duration(seconds: 0);
-
-        if (isRepeat == true) {
-          isPlaying = true;
-        } else {
-          isPlaying = false;
-          isRepeat = false;
-        }
-      });
-    });
-
-    this.widget.advancedPlayer.setUrl(videoPath);
-
-    this.widget.advancedPlayer.notificationService.startHeadlessService();
-    this.widget.advancedPlayer.notificationService.setNotification(
-        title: widget.title,
-        artist: 'Euda',
-        albumTitle: 'Meditation',
-        imageUrl: widget.img,
-        forwardSkipInterval: const Duration(seconds: 30),
-        backwardSkipInterval: const Duration(seconds: 30),
-        duration: _duration,
-        elapsedTime: Duration(seconds: 0));
+    play();
   }
 
   Widget slider() {
-    return Slider(
-      activeColor: greenBackground,
-      inactiveColor: Colors.grey,
-      value: _position.inSeconds.toDouble(),
-      min: 0.0,
-      max: _duration.inSeconds.toDouble() + 1.0,
-      onChanged: (double value) {
-        setState(() {
-          changeToSecond(value.toInt());
-          value = value;
-        });
+    return StreamBuilder<AudioContent>(
+      stream: controller.contentStream,
+      builder: (context, snapshot) {
+        return Slider(
+          activeColor: greenBackground,
+          inactiveColor: Colors.grey,
+          value: snapshot.data?.position.inMilliseconds.toDouble() ?? 0,
+          min: 0.0,
+          max: snapshot.data?.duration.inMilliseconds.toDouble() ?? 1,
+          onChanged: updatePosition,
+        );
       },
     );
   }
 
-  void changeToSecond(int value) {
-    Duration newDuration = Duration(seconds: value);
-    widget.advancedPlayer.seek(newDuration);
+  void updatePosition(num milliseconds) {
+    final position = Duration(milliseconds: milliseconds.toInt());
+    controller.changePosition(position);
   }
 
   Widget btnSlow() {
     return IconButton(
       icon: Image.asset('assets/icons/meditation/Back15.png'),
       onPressed: () {
-        var changedValue = _position.inSeconds.toInt() - 15;
-
-        setState(() {
-          if (changedValue < 0 || changedValue == 0) {
-            changeToSecond(0);
-          } else {
-            changeToSecond(_position.inSeconds.toInt() - 15);
-          }
-        });
-        // this.widget.advancedPlayer.setPlaybackRate(0.5);
+        final position = controller.currentContent.position;
+        updatePosition(position.inMilliseconds - 15000);
       },
     );
   }
@@ -127,19 +81,8 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
     return IconButton(
       icon: Image.asset('assets/icons/meditation/Next15.png'),
       onPressed: () {
-        var changedValue = _position.inSeconds.toInt() + 15;
-
-        setState(() {
-          if (changedValue > _duration.inSeconds.toDouble() ||
-              changedValue == _duration.inSeconds.toDouble()) {
-            // changeToSecond(0);
-
-          } else {
-            changeToSecond(_position.inSeconds.toInt() + 15);
-          }
-        });
-
-        // this.widget.advancedPlayer.setPlaybackRate(1.5);
+        final position = controller.currentContent.position;
+        updatePosition(position.inMilliseconds + 15000);
       },
     );
   }
@@ -157,35 +100,33 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
             color: greenBackground,
             borderRadius: BorderRadius.circular(100),
           ),
-          child: Container(
-              child: IconButton(
-            icon: _isLoadedd == true
-                ? isPlaying == false
-                    ? SvgPicture.asset('assets/icons/meditation/Play.svg',
-                        width: 30, height: 30, color: Colors.white)
-                    : SvgPicture.asset('assets/icons/meditation/Pause.svg',
-                        width: 30, height: 30)
-                : CircularProgressIndicator(
-                    color: Colors.white,
-                  ),
-            onPressed: () {
-              if (isPlaying == false) {
-                if (_position.inSeconds == 0) {
-                  this.widget.advancedPlayer.play(videoPath);
-                } else {
-                  this.widget.advancedPlayer.resume();
-                }
-                setState(() {
-                  isPlaying = true;
-                });
-              } else if (isPlaying == true) {
-                this.widget.advancedPlayer.pause();
-                setState(() {
-                  isPlaying = false;
-                });
-              }
+          child: GetBuilder<AudioManager>(
+            builder: (controller) {
+              final state = controller.state;
+
+              return IconButton(
+                icon: state.isLoading
+                    ? const CircularProgressIndicator(
+                        color: Colors.white,
+                      )
+                    : state.isPaused
+                        ? SvgPicture.asset('assets/icons/meditation/Play.svg',
+                            width: 30, height: 30, color: Colors.white)
+                        : state.isPlaying
+                            ? SvgPicture.asset(
+                                'assets/icons/meditation/Pause.svg',
+                                width: 30,
+                                height: 30)
+                            : const CircularProgressIndicator(
+                                color: Colors.white),
+                onPressed: () {
+                  if (state.isIdle) play();
+                  if (state.isPlaying) controller.pause();
+                  if (state.isPaused) controller.resume();
+                },
+              );
             },
-          )),
+          ),
         ),
       ),
     );
@@ -222,52 +163,55 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: [
-          Container(height: 135, child: loadAsset()),
-          Expanded(
-            flex: 1,
-            child: Column(
-              children: [
-                Expanded(child: slider()),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 20, right: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Align(
-                          alignment: Alignment.topLeft,
-                          child: Text(
-                            _position.toString().split('.').first,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontFamily: 'Manrope',
-                              color: Color.fromRGBO(255, 255, 255, 0.69),
+    return Column(
+      children: [
+        SizedBox(height: 135, child: loadAsset()),
+        Expanded(
+          flex: 1,
+          child: Column(
+            children: [
+              Expanded(child: slider()),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20, right: 20),
+                  child: StreamBuilder<AudioContent>(
+                      stream: controller.contentStream,
+                      builder: (context, snapshot) {
+                        final content = snapshot.data ?? const AudioContent();
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: Text(
+                                content.position.toString().split('.').first,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontFamily: 'Manrope',
+                                  color: Color.fromRGBO(255, 255, 255, 0.69),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: Text(
-                            _duration.toString().split('.').first,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontFamily: 'Manrope',
-                              color: Color.fromRGBO(255, 255, 255, 0.69),
+                            Align(
+                              alignment: Alignment.topRight,
+                              child: Text(
+                                content.duration.toString().split('.').first,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontFamily: 'Manrope',
+                                  color: Color.fromRGBO(255, 255, 255, 0.69),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              ],
-            ),
+                          ],
+                        );
+                      }),
+                ),
+              )
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

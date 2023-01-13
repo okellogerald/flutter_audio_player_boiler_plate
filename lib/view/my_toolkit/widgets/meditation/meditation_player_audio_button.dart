@@ -4,6 +4,7 @@ import 'package:euda_app/controllers/audio_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:uuid/uuid.dart';
 
 class MyToolKitAudioPlayer extends StatefulWidget {
   String path;
@@ -36,6 +37,7 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
       title: widget.title,
       imageURL: widget.img,
       audioUrl: widget.path,
+      id: const Uuid().v4(),
     );
     controller.play(content);
   }
@@ -47,43 +49,47 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
   }
 
   Widget slider() {
-    return StreamBuilder<AudioContent>(
-      stream: controller.contentStream,
-      builder: (context, snapshot) {
-        return Slider(
-          activeColor: greenBackground,
-          inactiveColor: Colors.grey,
-          value: snapshot.data?.position.inMilliseconds.toDouble() ?? 0,
-          min: 0.0,
-          max: snapshot.data?.duration.inMilliseconds.toDouble() ?? 1,
-          onChanged: updatePosition,
-        );
-      },
-    );
-  }
+    return StreamBuilder<Duration>(
+        stream: controller.positionStream,
+        builder: (context, snapshot) {
+          final position = snapshot.data ?? Duration.zero;
+          final value = position.inMilliseconds.toDouble();
+          print(value);
 
-  void updatePosition(num milliseconds) {
-    final position = Duration(milliseconds: milliseconds.toInt());
-    controller.changePosition(position);
+          return StreamBuilder<AudioContent>(
+            stream: controller.contentStream,
+            builder: (context, snapshot) {
+              final duration = snapshot.data?.duration ?? Duration.zero;
+              final max = duration.inMilliseconds.toDouble();
+              print(max);
+
+              return Slider(
+                activeColor: greenBackground,
+                inactiveColor: Colors.grey,
+                value: value.isNegative ? 0 : value,
+                min: 0.0,
+                max: max < value ? value + 1 : max,
+                onChanged: (value) {
+                  controller
+                      .changePosition(Duration(milliseconds: value.toInt()));
+                },
+              );
+            },
+          );
+        });
   }
 
   Widget btnSlow() {
     return IconButton(
       icon: Image.asset('assets/icons/meditation/Back15.png'),
-      onPressed: () {
-        final position = controller.currentContent.position;
-        updatePosition(position.inMilliseconds - 15000);
-      },
+      onPressed: controller.rewind,
     );
   }
 
   Widget btnFast() {
     return IconButton(
       icon: Image.asset('assets/icons/meditation/Next15.png'),
-      onPressed: () {
-        final position = controller.currentContent.position;
-        updatePosition(position.inMilliseconds + 15000);
-      },
+      onPressed: controller.fastForward,
     );
   }
 
@@ -175,37 +181,50 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 20, right: 20),
-                  child: StreamBuilder<AudioContent>(
-                      stream: controller.contentStream,
+                  child: StreamBuilder<Duration>(
+                      stream: controller.positionStream,
                       builder: (context, snapshot) {
-                        final content = snapshot.data ?? const AudioContent();
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                content.position.toString().split('.').first,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontFamily: 'Manrope',
-                                  color: Color.fromRGBO(255, 255, 255, 0.69),
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.topRight,
-                              child: Text(
-                                content.duration.toString().split('.').first,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontFamily: 'Manrope',
-                                  color: Color.fromRGBO(255, 255, 255, 0.69),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
+                        final position = snapshot.data ?? Duration.zero;
+
+                        return StreamBuilder<AudioContent>(
+                            stream: controller.contentStream,
+                            builder: (context, snapshot) {
+                              final content =
+                                  snapshot.data ?? const AudioContent();
+                              return Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Text(
+                                      position.toString().split('.').first,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Manrope',
+                                        color:
+                                            Color.fromRGBO(255, 255, 255, 0.69),
+                                      ),
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.topRight,
+                                    child: Text(
+                                      content.duration
+                                          .toString()
+                                          .split('.')
+                                          .first,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'Manrope',
+                                        color:
+                                            Color.fromRGBO(255, 255, 255, 0.69),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            });
                       }),
                 ),
               )

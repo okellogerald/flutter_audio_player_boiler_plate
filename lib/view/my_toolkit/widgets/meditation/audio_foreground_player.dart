@@ -86,16 +86,16 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
     MediaAction.pause,
   };
 
-  var _audioUrl = "";
+  var _audioId = "";
 
   void _handleAudioContentStream(AudioContent audioContent) {
-    if (_audioUrl == audioContent.audioUrl) {
+    if (_audioId == audioContent.id) {
       return;
     }
 
     mediaItem.add(
       MediaItem(
-        id: const Uuid().v4(),
+        id: audioContent.id,
         title: audioContent.title,
         duration: audioContent.duration,
         artUri: Uri.parse(audioContent.imageURL ?? demoImage),
@@ -113,7 +113,7 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
     );
 
     playbackState.add(_playbackState);
-    _audioUrl = audioContent.audioUrl;
+    _audioId = audioContent.id;
   }
 
   void _handleAudioPositionStream(Duration position) {
@@ -121,6 +121,7 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
   }
 
   void _handleAudioStateStream(AudioState audioState) {
+    print(audioState);
     playbackState.add(
       playbackState.value.copyWith(
         controls: audioState.isPlaying

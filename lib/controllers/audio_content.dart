@@ -1,22 +1,21 @@
 /// created specifically for providing values to the foreground player.
 class AudioContent {
-  final String title, audioUrl;
-  final Duration duration, position;
+  final String title, audioUrl, id;
+  final Duration duration;
   final String? imageURL;
   final bool playing;
 
   const AudioContent({
     this.title = '',
     this.audioUrl = '',
+    this.id = '',
     this.duration = Duration.zero,
-    this.position = Duration.zero,
     this.imageURL,
     this.playing = false,
   });
 
   AudioContent copyWith({
     Duration? duration,
-    Duration? position,
     bool? playing,
     String? imageURL,
     String? audioUrl,
@@ -26,8 +25,8 @@ class AudioContent {
       imageURL: imageURL ?? this.imageURL,
       audioUrl: audioUrl ?? this.audioUrl,
       duration: duration ?? this.duration,
-      position: position ?? this.position,
       playing: playing ?? this.playing,
+      id: id,
     );
   }
 

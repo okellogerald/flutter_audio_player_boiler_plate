@@ -110,7 +110,6 @@ class AudioManager extends GetxController {
   }
 
   Future<void> changePosition(Duration position) async {
-    print(position);
     try {
       await _player.seek(position);
     } catch (_) {
@@ -134,14 +133,18 @@ class AudioManager extends GetxController {
   void _setUpListeners() {
     if (_isAlreadyInitiated) return;
     _player.positionStream.listen((position) {
-      updateContent(_audioContent.copyWith(position: position));
+      _position = position;
     });
+
     _player.processingStateStream.listen((processingState) {
       if (processingState.isIdle) updateState(AudioState.idle);
+      if (processingState.isCompleted) updateState(AudioState.completed);
+
+      if (_state.isPaused) return;
       if (processingState.isPlaying) updateState(AudioState.playing);
       if (processingState.isLoading) updateState(AudioState.loading);
-      if (processingState.isCompleted) updateState(AudioState.completed);
     });
+
     _isAlreadyInitiated = true;
   }
 
@@ -190,6 +193,7 @@ class AudioManager extends GetxController {
   }
 
   updateState(AudioState newState) {
+    if (_state == newState) return;
     _state = newState;
     _stateStreamController.add(newState);
     updateContent(_audioContent.copyWith(playing: newState.isPlaying));

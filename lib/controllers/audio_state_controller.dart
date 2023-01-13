@@ -91,13 +91,17 @@ class AudioManager extends GetxController {
     }
   }
 
-  Future<void> changePosition(Duration _position) async {
+  Future<void> changePosition(Duration position) async {
     try {
-      await _player.seek(_position);
+      await _player.seek(position);
     } catch (_) {
       _handleError(AudioAction.seekPosition);
     }
   }
+
+  rewind() => changePosition(Duration(seconds: _position.inSeconds - 15));
+
+  fastForward() => changePosition(Duration(seconds: _position.inSeconds + 15));
 
   Future<void> playFromError() async {
     updateState(AudioState.loading);

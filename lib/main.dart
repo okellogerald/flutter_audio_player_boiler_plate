@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:audio_service/audio_service.dart';
-import 'package:audio_session/audio_session.dart';
+
 import 'package:euda_app/controllers/audio_state_controller.dart';
 import 'package:euda_app/provider/meditation_provider.dart';
 
@@ -69,11 +68,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String path = 'home';
-  @override
-  void initState() {
-    super.initState();
-    _initForegroundPlayer();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,23 +80,5 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  _initForegroundPlayer() async {
-    final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.music());
-    final audioManager = Get.find<AudioManager>();
-
-    await AudioService.init(
-      builder: () => ForegroundPlayer(
-        audioSession: session,
-        audioManager: audioManager,
-        /*     audioContentStream: ref.read(audioContentStreamProvider.stream),
-        audioPositionStream: ref.read(audioPositionStreamProvider.stream),
-        audioStateStream: ref.read(audioStateStreamProvider.stream),*/
-      ),
-      config: const AudioServiceConfig(
-          androidNotificationChannelId: 'com.euda.euda_app',
-          androidNotificationChannelName: 'Euda',
-          androidNotificationIcon: 'mipmap/launcher_icon'),
-    );
-  }
+  
 }

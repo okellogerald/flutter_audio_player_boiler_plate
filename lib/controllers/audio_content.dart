@@ -6,7 +6,7 @@ class AudioContent {
   final bool playing;
 
   const AudioContent({
-    this.title = 'MUSIC TITLE',
+    this.title = '',
     this.audioUrl = '',
     this.duration = Duration.zero,
     this.position = Duration.zero,

@@ -28,33 +28,83 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
   Future<void> seek(Duration position) => audioManager.changePosition(position);
 
   @override
+  Future<void> rewind() => audioManager.rewind();
+
+  @override
+  Future<void> fastForward() => audioManager.fastForward();
+
+  @override
   Future<void> stop() => audioManager.stop();
 
-  final MediaControl _pause = const MediaControl(
-      label: 'Pause', androidIcon: 'drawable/pause', action: MediaAction.pause);
+  static const _pause = MediaControl(
+    label: 'Pause',
+    androidIcon: 'drawable/pause',
+    action: MediaAction.pause,
+  );
 
-  final MediaControl _play = const MediaControl(
-      label: 'Play', androidIcon: 'drawable/play', action: MediaAction.play);
+  static const _play = MediaControl(
+    label: 'Play',
+    androidIcon: 'drawable/play',
+    action: MediaAction.play,
+  );
 
-  final MediaControl _stop = const MediaControl(
-      label: 'Stop', androidIcon: 'drawable/stop', action: MediaAction.stop);
+  static const _stop = MediaControl(
+    label: 'Stop',
+    androidIcon: 'drawable/stop',
+    action: MediaAction.stop,
+  );
+
+  static const _forward = MediaControl(
+    label: 'Stop',
+    androidIcon: 'drawable/_15_forward',
+    action: MediaAction.fastForward,
+  );
+
+  static const _rewind = MediaControl(
+    label: 'Stop',
+    androidIcon: 'drawable/_15_back',
+    action: MediaAction.rewind,
+  );
+
+  static final fastForwardAndroidControls = {
+    _forward,
+    _rewind,
+  };
+
+  static const seekIOSControls = {
+    MediaAction.seek,
+    MediaAction.seekForward,
+    MediaAction.seekBackward,
+    MediaAction.fastForward,
+    MediaAction.rewind,
+  };
 
   void _handleAudioContentStream(AudioContent audioContent) {
-    mediaItem.add(MediaItem(
-      id: const Uuid().v4(),
-      title: audioContent.title,
-      duration: audioContent.duration,
-      artUri: Uri.parse(audioContent.imageURL ?? demoImage),
-    ));
+    mediaItem.add(
+      MediaItem(
+        id: const Uuid().v4(),
+        title: audioContent.title,
+        duration: audioContent.duration,
+        artUri: Uri.parse(audioContent.imageURL ?? demoImage),
+      ),
+    );
 
     final _playbackState = PlaybackState(
-      controls: [audioContent.playing ? _pause : _play, _stop],
-      systemActions: const {
-        MediaAction.seek,
-        MediaAction.seekForward,
-        MediaAction.seekBackward,
-      },
-      androidCompactActionIndices: const [0],
+      controls: audioContent.playing || audioContent.hasDuration
+          ? [
+              _rewind,
+              audioContent.playing ? _pause : _play,
+              _forward,
+            ]
+          : [_play],
+      systemActions: audioContent.playing || audioContent.hasDuration
+          ? {
+              ...seekIOSControls,
+              audioContent.playing ? MediaAction.pause : MediaAction.play,
+            }
+          : {MediaAction.play},
+      androidCompactActionIndices:
+          audioContent.playing || audioContent.hasDuration ? [1] : [0],
       processingState: audioContent.hasDuration
           ? AudioProcessingState.ready
           : AudioProcessingState.idle,
@@ -76,7 +126,19 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
       playbackState.value.copyWith(
         controls: audioState.isIdle
             ? [_play]
-            : [audioState.isPlaying ? _pause : _play, _stop],
+            : [
+                _rewind,
+                audioState.isPlaying ? _pause : _play,
+                _forward,
+              ],
+        systemActions: audioState.isPlaying || audioState.isPaused
+            ? {
+                ...seekIOSControls,
+                audioState.isPlaying ? MediaAction.pause : MediaAction.play,
+              }
+            : audioState.isLoading
+                ? seekIOSControls
+                : {MediaAction.play},
         processingState: audioState.isLoading
             ? AudioProcessingState.loading
             : audioState.isIdle

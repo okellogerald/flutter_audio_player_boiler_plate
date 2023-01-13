@@ -109,7 +109,7 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
                     ? const CircularProgressIndicator(
                         color: Colors.white,
                       )
-                    : state.isPaused
+                    : state.isPaused || state.isCompleted
                         ? SvgPicture.asset('assets/icons/meditation/Play.svg',
                             width: 30, height: 30, color: Colors.white)
                         : state.isPlaying
@@ -123,6 +123,7 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
                   if (state.isIdle) play();
                   if (state.isPlaying) controller.pause();
                   if (state.isPaused) controller.resume();
+                  if (state.isCompleted) controller.replay();
                 },
               );
             },

@@ -67,7 +67,8 @@ class _MyToolKitPlayerState extends State<MyToolKitPlayer> {
             image: DecorationImage(
               colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.6), BlendMode.darken),
-              image: NetworkImage(imgLink),
+              //TODO: edit this back to using imgLink
+              image: NetworkImage(sampleImage),
               fit: BoxFit.cover,
             ),
           ),

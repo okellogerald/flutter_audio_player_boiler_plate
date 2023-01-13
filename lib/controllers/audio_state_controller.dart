@@ -4,9 +4,14 @@ import 'package:euda_app/controllers/audio_content.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 
-enum AudioState { idle, loading, paused, playing, error }
+const sampleImage =
+    "https://images.pexels.com/photos/2911521/pexels-photo-2911521.jpeg?auto=compress&cs=tinysrgb&w=800";
+const sampleAudio =
+    "https://file-examples.com/storage/fea8fc38fd63bc5c39cf20b/2017/11/file_example_WAV_5MG.wav";
 
-enum AudioAction { play, pause, resume, stop, seekPosition }
+enum AudioState { idle, loading, paused, playing, completed, error }
+
+enum AudioAction { play, pause, resume, stop, seekPosition, replay }
 
 class AudioManager extends GetxController {
   static final _player = AudioPlayer();
@@ -41,11 +46,24 @@ class AudioManager extends GetxController {
   Future<void> play(AudioContent content) async {
     try {
       if (_state.isPlaying) await pause();
+      if (_state.isCompleted) await replay();
       _setUpListeners();
-      final duration = await _player.setUrl(content.audioUrl);
+      final duration = await _player.setUrl(sampleAudio);
       if (duration == null) throw 'An error happened';
-      updateContent(content.copyWith(duration: duration));
+      updateContent(content.copyWith(
+        duration: duration,
+        audioUrl: sampleAudio,
+        imageURL: sampleImage,
+      ));
       await _player.play();
+    } catch (_) {
+      _handleError(AudioAction.play);
+    }
+  }
+
+  Future<void> replay() async {
+    try {
+      await _player.seek(Duration.zero);
     } catch (_) {
       _handleError(AudioAction.play);
     }
@@ -92,6 +110,7 @@ class AudioManager extends GetxController {
   }
 
   Future<void> changePosition(Duration position) async {
+    print(position);
     try {
       await _player.seek(position);
     } catch (_) {
@@ -121,6 +140,7 @@ class AudioManager extends GetxController {
       if (processingState.isIdle) updateState(AudioState.idle);
       if (processingState.isPlaying) updateState(AudioState.playing);
       if (processingState.isLoading) updateState(AudioState.loading);
+      if (processingState.isCompleted) updateState(AudioState.completed);
     });
     _isAlreadyInitiated = true;
   }
@@ -189,12 +209,13 @@ extension AudioStateExtension on AudioState {
   bool get isPlaying => this == AudioState.playing;
   bool get isIdle => this == AudioState.idle;
   bool get isError => this == AudioState.error;
+  bool get isCompleted => this == AudioState.completed;
 }
 
 extension ProcessingStateExtension on ProcessingState {
   bool get isLoading =>
       this == ProcessingState.loading || this == ProcessingState.buffering;
   bool get isPlaying => this == ProcessingState.ready;
-  bool get isIdle =>
-      this == ProcessingState.idle || this == ProcessingState.completed;
+  bool get isIdle => this == ProcessingState.idle;
+  bool get isCompleted => this == ProcessingState.completed;
 }

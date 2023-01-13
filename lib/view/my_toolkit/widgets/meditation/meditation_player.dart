@@ -68,7 +68,7 @@ class _MyToolKitPlayerState extends State<MyToolKitPlayer> {
               colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.6), BlendMode.darken),
                   //TODO: edit this back to using imgLink
-              image: NetworkImage("https://images.pexels.com/photos/1327405/pexels-photo-1327405.jpeg?auto=compress&cs=tinysrgb&w=800"),
+              image: const NetworkImage(sampleImage),
               fit: BoxFit.cover,
             ),
           ),

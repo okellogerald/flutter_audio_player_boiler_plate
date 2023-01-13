@@ -4,6 +4,11 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:euda_app/controllers/audio_content.dart';
 import 'package:get/get.dart';
 
+const sampleImage =
+    "https://images.pexels.com/photos/2911521/pexels-photo-2911521.jpeg?auto=compress&cs=tinysrgb&w=800";
+const sampleAudio =
+    "https://file-examples.com/storage/fea8fc38fd63bc5c39cf20b/2017/11/file_example_WAV_10MG.wav";
+
 enum AudioState { idle, loading, paused, playing, completed, error }
 
 enum AudioAction { play, pause, resume, stop, seekPosition }
@@ -37,11 +42,6 @@ class AudioManager extends GetxController {
   Stream<Duration> get positionStream => _player.onAudioPositionChanged;
   AudioState get state => _state;
   AudioContent get currentContent => _audioContent;
-
-  final sampleAudio =
-      "https://file-examples.com/storage/fea8fc38fd63bc5c39cf20b/2017/11/file_example_WAV_5MG.wav";
-  final sampleImage =
-      "https://images.pexels.com/photos/1327405/pexels-photo-1327405.jpeg?auto=compress&cs=tinysrgb&w=800";
 
   Future<void> play(AudioContent content) async {
     try {

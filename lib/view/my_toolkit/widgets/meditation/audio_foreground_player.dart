@@ -48,11 +48,11 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
     action: MediaAction.play,
   );
 
-  static const _stop = MediaControl(
+  /* static const _stop = MediaControl(
     label: 'Stop',
     androidIcon: 'drawable/stop',
     action: MediaAction.stop,
-  );
+  );*/
 
   static const _forward = MediaControl(
     label: 'Stop',
@@ -66,20 +66,33 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
     action: MediaAction.rewind,
   );
 
-  static final fastForwardAndroidControls = {
+  static final androidActionsWithPause = [
     _forward,
+    _pause,
     _rewind,
-  };
-
-  static const seekIOSControls = {
+  ];
+  static final androidActionsWithPlay = [
+    _forward,
+    _play,
+    _rewind,
+  ];
+  static const iOSControls = {
     MediaAction.seek,
     MediaAction.seekForward,
     MediaAction.seekBackward,
     MediaAction.fastForward,
     MediaAction.rewind,
+    MediaAction.play,
+    MediaAction.pause,
   };
 
+  var _audioUrl = "";
+
   void _handleAudioContentStream(AudioContent audioContent) {
+    if (_audioUrl == audioContent.audioUrl && audioContent.playing) {
+      return;
+    }
+
     mediaItem.add(
       MediaItem(
         id: const Uuid().v4(),
@@ -90,31 +103,16 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
     );
 
     final _playbackState = PlaybackState(
-      controls: audioContent.playing || audioContent.hasDuration
-          ? [
-              _rewind,
-              audioContent.playing ? _pause : _play,
-              _forward,
-            ]
-          : [_play],
-      systemActions: audioContent.playing || audioContent.hasDuration
-          ? {
-              ...seekIOSControls,
-              audioContent.playing ? MediaAction.pause : MediaAction.play,
-            }
-          : {MediaAction.play},
-      androidCompactActionIndices:
-          audioContent.playing || audioContent.hasDuration ? [1] : [0],
-      processingState: audioContent.hasDuration
-          ? AudioProcessingState.ready
-          : AudioProcessingState.idle,
-      playing: audioContent.playing,
-      updatePosition: audioContent.position,
+      controls: androidActionsWithPlay,
+      systemActions: iOSControls,
+      androidCompactActionIndices: [0, 1, 2],
+      processingState: AudioProcessingState.idle,
       speed: 1.0,
       queueIndex: 0,
     );
 
     playbackState.add(_playbackState);
+    _audioUrl = audioContent.audioUrl;
   }
 
   void _handleAudioPositionStream(Duration position) {
@@ -124,21 +122,9 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
   void _handleAudioStateStream(AudioState audioState) {
     playbackState.add(
       playbackState.value.copyWith(
-        controls: audioState.isIdle
-            ? [_play]
-            : [
-                _rewind,
-                audioState.isPlaying ? _pause : _play,
-                _forward,
-              ],
-        systemActions: audioState.isPlaying || audioState.isPaused
-            ? {
-                ...seekIOSControls,
-                audioState.isPlaying ? MediaAction.pause : MediaAction.play,
-              }
-            : audioState.isLoading
-                ? seekIOSControls
-                : {MediaAction.play},
+        controls: audioState.isPlaying
+            ? androidActionsWithPause
+            : androidActionsWithPlay,
         processingState: audioState.isLoading
             ? AudioProcessingState.loading
             : audioState.isIdle

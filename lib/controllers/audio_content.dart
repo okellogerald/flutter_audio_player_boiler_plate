@@ -14,14 +14,20 @@ class AudioContent {
     this.playing = false,
   });
 
-  AudioContent copyWith({Duration? duration, Duration? position, bool? playing}) {
+  AudioContent copyWith({
+    Duration? duration,
+    Duration? position,
+    bool? playing,
+    String? imageURL,
+    String? audioUrl,
+  }) {
     return AudioContent(
       title: title,
-      imageURL: imageURL,
-      audioUrl: audioUrl,
+      imageURL: imageURL ?? this.imageURL,
+      audioUrl: audioUrl ?? this.audioUrl,
       duration: duration ?? this.duration,
       position: position ?? this.position,
-      playing: playing ??  this.playing,
+      playing: playing ?? this.playing,
     );
   }
 

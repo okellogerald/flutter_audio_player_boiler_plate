@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:audio_session/audio_session.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:euda_app/controllers/audio_content.dart';
 import 'package:get/get.dart';
-import 'package:just_audio/just_audio.dart';
 
-enum AudioState { idle, loading, paused, playing, error }
+enum AudioState { idle, loading, paused, playing, completed, error }
 
 enum AudioAction { play, pause, resume, stop, seekPosition }
 
@@ -34,21 +34,31 @@ class AudioManager extends GetxController {
 
   Stream<AudioContent> get contentStream => _contentStreamController.stream;
   Stream<AudioState> get stateStream => _stateStreamController.stream;
-  Stream<Duration> get positionStream => _player.positionStream;
+  Stream<Duration> get positionStream => _player.onAudioPositionChanged;
   AudioState get state => _state;
   AudioContent get currentContent => _audioContent;
 
+  final sampleAudio =
+      "https://file-examples.com/storage/fea8fc38fd63bc5c39cf20b/2017/11/file_example_WAV_5MG.wav";
+  final sampleImage =
+      "https://images.pexels.com/photos/1327405/pexels-photo-1327405.jpeg?auto=compress&cs=tinysrgb&w=800";
+
   Future<void> play(AudioContent content) async {
     try {
-      if (_state.isPlaying) await pause();
+      if (_state.isPlaying) return await pause();
       _setUpListeners();
-      final duration = await _player.setUrl(content.audioUrl);
-      if (duration == null) throw 'An error happened';
-      updateContent(content.copyWith(duration: duration));
-      await _player.play();
+      final duration = await _player.play(sampleAudio);
+      if (duration == 0) throw "An error happened";
+      updateContent(
+          content.copyWith(audioUrl: sampleAudio, imageURL: sampleImage));
     } catch (_) {
       _handleError(AudioAction.play);
     }
+  }
+
+  Future<void> replay() async {
+    await _player.seek(Duration.zero);
+    _player.resume();
   }
 
   Future<void> playFromForeground() async {
@@ -73,7 +83,7 @@ class AudioManager extends GetxController {
   Future<void> resume() async {
     try {
       updateState(AudioState.playing);
-      await _player.play();
+      await _player.resume();
     } catch (_) {
       _handleError(AudioAction.resume);
     }
@@ -114,14 +124,36 @@ class AudioManager extends GetxController {
 
   void _setUpListeners() {
     if (_isAlreadyInitiated) return;
-    _player.positionStream.listen((position) {
-      updateContent(_audioContent.copyWith(position: position));
+    _player.onAudioPositionChanged.listen((position) {
+      if (!state.isPlaying && _player.state == PlayerState.PLAYING) {
+        updateState(AudioState.playing, false);
+      }
+      print(position);
+      updateContent(_audioContent.copyWith(
+          position: position, playing: _state.isPlaying));
     });
-    _player.processingStateStream.listen((processingState) {
-      if (processingState.isIdle) updateState(AudioState.idle);
-      if (processingState.isPlaying) updateState(AudioState.playing);
-      if (processingState.isLoading) updateState(AudioState.loading);
+    _player.onDurationChanged.listen((duration) {
+      updateContent(_audioContent.copyWith(duration: duration));
     });
+    _player.onPlayerStateChanged.listen((playerState) {
+      print(playerState);
+      if (playerState.isPlaying && _audioContent.duration.inMilliseconds == 0) {
+        return;
+      }
+      if (playerState.isIdle) updateState(AudioState.idle);
+      if (playerState.isPlaying) updateState(AudioState.playing);
+      if (playerState.isPaused) updateState(AudioState.paused);
+    });
+
+    _player.onPlayerCompletion.listen((_) {
+      print("player is completed");
+      updateState(AudioState.completed);
+    });
+
+    _player.onSeekComplete.listen((_) {
+      print("seek is complete");
+    });
+
     _isAlreadyInitiated = true;
   }
 
@@ -169,10 +201,13 @@ class AudioManager extends GetxController {
     }
   }
 
-  updateState(AudioState newState) {
+  updateState(AudioState newState, [bool shouldUpdateContent = true]) {
     _state = newState;
     _stateStreamController.add(newState);
-    updateContent(_audioContent.copyWith(playing: newState.isPlaying));
+    if (shouldUpdateContent) {
+      print("updating new state: $newState");
+      updateContent(_audioContent.copyWith(playing: newState.isPlaying));
+    }
     update();
   }
 
@@ -189,12 +224,12 @@ extension AudioStateExtension on AudioState {
   bool get isPlaying => this == AudioState.playing;
   bool get isIdle => this == AudioState.idle;
   bool get isError => this == AudioState.error;
+  bool get isCompleted => this == AudioState.completed;
 }
 
-extension ProcessingStateExtension on ProcessingState {
-  bool get isLoading =>
-      this == ProcessingState.loading || this == ProcessingState.buffering;
-  bool get isPlaying => this == ProcessingState.ready;
+extension PlayerStateExtension on PlayerState {
+  bool get isPlaying => this == PlayerState.PLAYING;
+  bool get isPaused => this == PlayerState.PAUSED;
   bool get isIdle =>
-      this == ProcessingState.idle || this == ProcessingState.completed;
+      this == PlayerState.COMPLETED || this == PlayerState.STOPPED;
 }

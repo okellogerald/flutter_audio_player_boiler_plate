@@ -50,12 +50,15 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
     return StreamBuilder<AudioContent>(
       stream: controller.contentStream,
       builder: (context, snapshot) {
+        final content = snapshot.data ?? const AudioContent();
+        final min = content.position.inMilliseconds.toDouble();
+        final max = content.duration.inMilliseconds.toDouble();
         return Slider(
           activeColor: greenBackground,
           inactiveColor: Colors.grey,
-          value: snapshot.data?.position.inMilliseconds.toDouble() ?? 0,
+          value: min,
           min: 0.0,
-          max: snapshot.data?.duration.inMilliseconds.toDouble() ?? 1,
+          max: max < min ? min : max,
           onChanged: updatePosition,
         );
       },
@@ -109,7 +112,7 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
                     ? const CircularProgressIndicator(
                         color: Colors.white,
                       )
-                    : state.isPaused
+                    : state.isPaused || state.isCompleted
                         ? SvgPicture.asset('assets/icons/meditation/Play.svg',
                             width: 30, height: 30, color: Colors.white)
                         : state.isPlaying
@@ -123,6 +126,7 @@ class _MyToolKitAudioPlayerState extends State<MyToolKitAudioPlayer> {
                   if (state.isIdle) play();
                   if (state.isPlaying) controller.pause();
                   if (state.isPaused) controller.resume();
+                  if (state.isCompleted) controller.replay();
                 },
               );
             },

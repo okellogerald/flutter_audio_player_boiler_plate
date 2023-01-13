@@ -44,8 +44,8 @@ dependencies:
   firebase_core: ^1.10.0
   
   # audioplayers: ^1.1.1
-  # audioplayers: ^0.20.1
-  just_audio: ^0.9.31
+  audioplayers: ^0.20.1
+  #just_audio: ^0.9.31
   audio_service: ^0.18.9
   url_launcher: ^6.0.17
 

@@ -146,6 +146,7 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
                 : audioState.isError
                     ? AudioProcessingState.error
                     : AudioProcessingState.ready,
+        playing: audioState.isPlaying,
       ),
     );
   }

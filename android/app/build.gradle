@@ -52,8 +52,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        // applicationId "com.euda.eudaMobile"
-        applicationId "com.euda.euda_app"
+        applicationId "com.example.audio_player_boilerplate"
         minSdkVersion 19
         targetSdkVersion 31
         versionCode flutterVersionCode.toInteger()
@@ -61,14 +60,6 @@ android {
         multiDexEnabled = true
     }
 
-    signingConfigs {
-     /*  release {
-           keyAlias keystoreProperties['keyAlias']
-           keyPassword keystoreProperties['keyPassword']
-           storeFile file(keystoreProperties['storeFile'])
-           storePassword keystoreProperties['storePassword']
-       }*/
-   }
    buildTypes {
        release {
            signingConfig signingConfigs.debug

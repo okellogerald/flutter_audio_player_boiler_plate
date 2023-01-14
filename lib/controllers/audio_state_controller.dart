@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:audio_session/audio_session.dart';
-import 'package:euda_app/controllers/audio_content.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
+
+import 'audio_content.dart';
 
 const sampleImage =
     "https://images.pexels.com/photos/2911521/pexels-photo-2911521.jpeg?auto=compress&cs=tinysrgb&w=800";
@@ -50,11 +51,7 @@ class AudioManager extends GetxController {
       _setUpListeners();
       final duration = await _player.setUrl(sampleAudio);
       if (duration == null) throw 'An error happened';
-      updateContent(content.copyWith(
-        duration: duration,
-        audioUrl: sampleAudio,
-        imageURL: sampleImage,
-      ));
+      updateContent(content.copyWith(duration: duration));
       await _player.play();
     } catch (_) {
       _handleError(AudioAction.play);
@@ -117,9 +114,9 @@ class AudioManager extends GetxController {
     }
   }
 
-  rewind() => changePosition(Duration(seconds: _position.inSeconds - 15));
+  rewind() => changePosition(Duration(seconds: _position.inSeconds - 10));
 
-  fastForward() => changePosition(Duration(seconds: _position.inSeconds + 15));
+  fastForward() => changePosition(Duration(seconds: _position.inSeconds + 10));
 
   Future<void> playFromError() async {
     updateState(AudioState.loading);

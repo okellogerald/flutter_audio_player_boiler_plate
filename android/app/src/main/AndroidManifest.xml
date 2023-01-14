@@ -1,7 +1,7 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.euda.euda_app">
+    package="com.example.audio_player_boilerplate">
 
     <queries>
         <intent>
@@ -25,8 +25,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:name="androidx.multidex.MultiDexApplication"
-        android:label="euda"
+        android:name="com.example.audio_player_boilerplate"
+        android:label="Audio Player"
         android:usesCleartextTraffic="true"
         tools:ignore="Instantiatable"
         android:icon="@mipmap/launcher_icon">

@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 
-import 'controllers/audio_state_controller.dart';
+import 'controller/audio_state_controller.dart';
 import 'views/audios_screen.dart';
 import 'views/foreground_player.dart';
 
@@ -32,9 +32,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      home: const AudiosScreen(),
-      theme: ThemeData(fontFamily: 'Manrope'),
+    return const GetMaterialApp(
+      home: AudiosScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -52,7 +51,7 @@ class _MyAppState extends State<MyApp> {
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.example.audio_player_boilerplate',
         androidNotificationChannelName: 'Audio Player',
-        androidNotificationIcon: 'mipmap/launcher_icon',
+        androidNotificationIcon: 'mipmap/ic_launcher',
       ),
     );
   }

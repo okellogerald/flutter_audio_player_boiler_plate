@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 
-import '../controllers/audio_content.dart';
-import '../controllers/audio_state_controller.dart';
+import '../controller/audio_content.dart';
+import '../controller/audio_state_controller.dart';
 import '../data/audios.dart';
 
 class AudioScreen extends StatefulWidget {
@@ -69,7 +69,7 @@ class _AudioScreenState extends State<AudioScreen> {
               flex: 1,
               child: Column(
                 children: [
-                  slider(),
+                  buildSlider(),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20),
@@ -109,7 +109,7 @@ class _AudioScreenState extends State<AudioScreen> {
     );
   }
 
-  Widget slider() {
+  Widget buildSlider() {
     return AudioPositionDurationStreamBuilder(
       builder: (position, duration) {
         final value = position.inMilliseconds.toDouble();
@@ -129,7 +129,7 @@ class _AudioScreenState extends State<AudioScreen> {
     );
   }
 
-  Widget btnStart() {
+  Widget buildPlayPauseButton() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.3),
@@ -181,44 +181,36 @@ class _AudioScreenState extends State<AudioScreen> {
         children: <Widget>[
           Expanded(
             flex: 1,
-            child: btnSlow(),
+            child: IconButton(
+              icon: const Icon(
+                Icons.replay_10_rounded,
+                color: Colors.white,
+                size: 30,
+              ),
+              onPressed: controller.rewind,
+            ),
           ),
           Expanded(
             flex: 1,
             child: Container(
-              child: btnStart(),
+              child: buildPlayPauseButton(),
               color: Colors.transparent,
               height: MediaQuery.of(context).size.height,
             ),
           ),
           Expanded(
             flex: 1,
-            child: btnFast(),
+            child: IconButton(
+              icon: const Icon(
+                Icons.forward_10_rounded,
+                color: Colors.white,
+                size: 30,
+              ),
+              onPressed: controller.fastForward,
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget btnSlow() {
-    return IconButton(
-      icon: const Icon(
-        Icons.replay_10_rounded,
-        color: Colors.white,
-        size: 30,
-      ),
-      onPressed: controller.rewind,
-    );
-  }
-
-  Widget btnFast() {
-    return IconButton(
-      icon: const Icon(
-        Icons.forward_10_rounded,
-        color: Colors.white,
-        size: 30,
-      ),
-      onPressed: controller.fastForward,
     );
   }
 }

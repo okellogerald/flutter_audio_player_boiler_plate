@@ -28,14 +28,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  fonts:
-    - family: Manrope
-      fonts:
-        - asset: google_fonts/Manrope-Bold.ttf
-        - asset: google_fonts/Manrope-ExtraBold.ttf
-        - asset: google_fonts/Manrope-ExtraLight.ttf
-        - asset: google_fonts/Manrope-Light.ttf
-        - asset: google_fonts/Manrope-Medium.ttf
-        - asset: google_fonts/Manrope-SemiBold.ttf
-        - asset: google_fonts/Manrope-Regular.ttf

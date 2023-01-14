@@ -1,8 +1,8 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 
-import '../controllers/audio_content.dart';
-import '../controllers/audio_state_controller.dart';
+import '../controller/audio_content.dart';
+import '../controller/audio_state_controller.dart';
 
 class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
   final AudioManager audioManager;

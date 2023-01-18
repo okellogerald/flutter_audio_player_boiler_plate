@@ -1,5 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 
 import '../controller/audio_content.dart';
 import '../controller/audio_state_controller.dart';
@@ -47,12 +48,6 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
     action: MediaAction.play,
   );
 
-  /* static const _stop = MediaControl(
-    label: 'Stop',
-    androidIcon: 'drawable/stop',
-    action: MediaAction.stop,
-  );*/
-
   static const _forward = MediaControl(
     label: 'Stop',
     androidIcon: 'drawable/_15_forward',
@@ -85,7 +80,11 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
     MediaAction.pause,
   };
 
-  var _audioId = "";
+  String _audioId = '';
+
+  bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
+
+  bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
 
   void _handleAudioContentStream(AudioContent audioContent) {
     if (_audioId == audioContent.id) {
@@ -102,11 +101,12 @@ class ForegroundPlayer extends BaseAudioHandler with SeekHandler {
     );
 
     final _playbackState = PlaybackState(
-      controls: androidActionsWithPlay,
+      controls: androidActionsWithPause,
       systemActions: iOSControls,
       androidCompactActionIndices: [0, 1, 2],
-      processingState: AudioProcessingState.idle,
-      playing: false,
+      processingState:
+          _isIOS ? AudioProcessingState.idle : AudioProcessingState.ready,
+      playing: _isAndroid,
       speed: 1.0,
       queueIndex: 0,
     );

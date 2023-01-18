@@ -8,7 +8,7 @@ import 'audio_content.dart';
 const sampleImage =
     "https://images.pexels.com/photos/2911521/pexels-photo-2911521.jpeg?auto=compress&cs=tinysrgb&w=800";
 const sampleAudio =
-    "https://file-examples.com/storage/fea8fc38fd63bc5c39cf20b/2017/11/file_example_WAV_5MG.wav";
+    "https://file-examples.com/storage/fe2879c03363c669a9ef954/2017/11/file_example_MP3_5MG.mp3";
 
 enum AudioState { idle, loading, paused, playing, completed, error }
 
